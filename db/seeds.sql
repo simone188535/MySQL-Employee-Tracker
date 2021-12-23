@@ -15,24 +15,24 @@ VALUES
 ('Visual Design Manager', 60500, 1),
 
 -- Marketing
-('Junior Marketing Associate', 40000, 1),
-('Marketing Associate', 50000, 1),
-('Senior Marketing Associate', 60000, 1),
+('Junior Marketing Associate', 40000, 2),
+('Marketing Associate', 50000, 2),
+('Senior Marketing Associate', 60000, 2),
 
 -- Technology
-('Junior Software Engineer', 60500, 2),
-('Software Engineer', 70500, 2),
-('Senior Software Engineer', 90800, 2),
+('Junior Software Engineer', 60500, 3),
+('Software Engineer', 70500, 3),
+('Senior Software Engineer', 90800, 3),
 
 -- HR
-('Junior HR Associate', 35000, 3),
-('Software HR Associate', 55500, 3),
-('Senior HR Associate', 70000, 3),
+('Junior HR Associate', 35000, 4),
+('Software HR Associate', 55500, 4),
+('Senior HR Associate', 70000, 4),
 
 -- Artist
-('Junior Visual Design Artist', 35000, 4),
-('Visual Design Artist', 55000, 4),
-('Senior Visual Design Artist', 60000, 4),
+('Junior Visual Design Artist', 35000, 5),
+('Visual Design Artist', 55000, 5),
+('Senior Visual Design Artist', 60000, 5),
 
 -- No Role
 ('New Hire', 0, NULL);
