@@ -14,13 +14,6 @@ app.use(express.json());
 
 const viewAllEmployee = async () => {
   try {
-    // https://www.mysqltutorial.org/mysql-self-join/   Table Join to self
-    // const allEmployeeQuery = await queryPromise(
-    //     `SELECT e.id, e.first_name, e.last_name, role.title, department.name AS department, role.salary, CONCAT(m.first_name, ' ', m.last_name) AS manager FROM employee m RIGHT JOIN employee e ON m.id = e.manager_id INNER JOIN role ON e.role_id = role.id LEFT JOIN department ON e.manager_id = department.id;`);
-    
-    // const allEmployeeQuery = await queryPromise(
-    //   `SELECT *, CONCAT(m.first_name, ' ', m.last_name) AS manager FROM employee m RIGHT JOIN employee e ON m.id = e.manager_id JOIN department ON e.manager_id = department.id;`);
-
     const allEmployeeQuery = await queryPromise(
         `SELECT e.id, e.first_name, e.last_name, role.title, department.name AS department, role.salary, CONCAT(m.first_name, ' ', m.last_name) AS manager 
         FROM employee m RIGHT JOIN
