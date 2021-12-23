@@ -1,6 +1,6 @@
 INSERT INTO department (name)
 VALUES 
-('Managment'),
+('Management'),
 ('Marketing'),
 ('Technology'),
 ('HR'),

@@ -15,10 +15,18 @@ app.use(express.json());
 const viewAllEmployee = async () => {
   try {
     // https://www.mysqltutorial.org/mysql-self-join/   Table Join to self
-    // const allEmployeeQuery = await queryPromise("SELECT employee.first_name, employee.last_name, role.title, department.name AS department, role.salary FROM employee INNER JOIN role ON employee.role_id = role.id LEFT JOIN department ON employee.manager_id = department.id;");
+    // const allEmployeeQuery = await queryPromise(
+    //     `SELECT e.id, e.first_name, e.last_name, role.title, department.name AS department, role.salary, CONCAT(m.first_name, ' ', m.last_name) AS manager FROM employee m RIGHT JOIN employee e ON m.id = e.manager_id INNER JOIN role ON e.role_id = role.id LEFT JOIN department ON e.manager_id = department.id;`);
+    
+    // const allEmployeeQuery = await queryPromise(
+    //   `SELECT *, CONCAT(m.first_name, ' ', m.last_name) AS manager FROM employee m RIGHT JOIN employee e ON m.id = e.manager_id JOIN department ON e.manager_id = department.id;`);
+
     const allEmployeeQuery = await queryPromise(
-      "SELECT * FROM employee INNER JOIN role ON employee.role_id = role.id LEFT JOIN department ON employee.manager_id = department.id;"
-    );
+        `SELECT e.id, e.first_name, e.last_name, role.title, department.name AS department, role.salary, CONCAT(m.first_name, ' ', m.last_name) AS manager 
+        FROM employee m RIGHT JOIN
+        employee e ON m.id = e.manager_id
+        INNER JOIN role ON e.role_id = role.id 
+        LEFT JOIN department ON role.department_id = department.id`);
     console.table(allEmployeeQuery);
   } catch (err) {
     throw err;
@@ -43,35 +51,44 @@ const viewAllRoles = async () => {
 
 // complete
 const addRole = async () => {
-    try {
-        const allDepartmentQuery = await queryPromise("SELECT * FROM department;");
-        const departmentNames = allDepartmentQuery.map((department) => department.name);
+  try {
+    const allDepartmentQuery = await queryPromise("SELECT * FROM department;");
+    const departmentNames = allDepartmentQuery.map(
+      (department) => department.name
+    );
 
-        const { roleName, roleSalary, whichRole } = await inquirer.prompt([{
-            type: "input",
-            message: "What is the name of the role?",
-            name: "roleName",
-          },{
-            type: "input",
-            message: "What is the salary of the role?",
-            name: "roleSalary",
-          },
-          {
-            type: "list",
-            message: "Which department does the role belong to?",
-            pageSize: departmentNames.length,
-            choices: departmentNames,
-            name: "whichRole",
-          },
-        ]);
+    const { roleName, roleSalary, whichRole } = await inquirer.prompt([
+      {
+        type: "input",
+        message: "What is the name of the role?",
+        name: "roleName",
+      },
+      {
+        type: "input",
+        message: "What is the salary of the role?",
+        name: "roleSalary",
+      },
+      {
+        type: "list",
+        message: "Which department does the role belong to?",
+        pageSize: departmentNames.length,
+        choices: departmentNames,
+        name: "whichRole",
+      },
+    ]);
 
-        const findDeptQueryObj =  allDepartmentQuery.find(element => element.name === whichRole);
+    const findDeptQueryObj = allDepartmentQuery.find(
+      (element) => element.name === whichRole
+    );
 
-        await queryPromise("INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?);", [roleName, roleSalary, findDeptQueryObj.id]);
-        console.log(`Added ${roleName} to database.`);
-      } catch (err) {
-        throw err;
-      }
+    await queryPromise(
+      "INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?);",
+      [roleName, roleSalary, findDeptQueryObj.id]
+    );
+    console.log(`Added ${roleName} to database.`);
+  } catch (err) {
+    throw err;
+  }
 };
 
 // complete
@@ -87,13 +104,18 @@ const viewAllDepartment = async () => {
 // correct
 const addDepartment = async () => {
   try {
-    const { departmentName } = await inquirer.prompt([{
-      type: "input",
-      message: "What is the name of the department?",
-      name: "departmentName",
-    }]);
+    const { departmentName } = await inquirer.prompt([
+      {
+        type: "input",
+        message: "What is the name of the department?",
+        name: "departmentName",
+      },
+    ]);
 
-    await queryPromise("INSERT INTO department (name) VALUES (?);", departmentName);
+    await queryPromise(
+      "INSERT INTO department (name) VALUES (?);",
+      departmentName
+    );
     console.log(`Added ${departmentName} to database.`);
   } catch (err) {
     throw err;
@@ -165,26 +187,6 @@ const allUserOptions = async () => {
 };
 
 allUserOptions();
-
-// Query database
-
-// let deletedRow = 2;
-// db.query(`DELETE FROM favorite_books WHERE  ? OR ?`, [{id: 2 }, { id: 6 }], (err, result) => {
-// db.query(
-//   `DELETE FROM favorite_books WHERE id = ?`,
-//   deletedRow,
-//   (err, result) => {
-//     if (err) {
-//       console.log(err);
-//     }
-//     console.log(result);
-//   }
-// );
-
-// // Query database
-// db.query("SELECT * FROM favorite_books", function (err, results) {
-//   console.log(results);
-// });
 
 // Default response for any other request (Not Found)
 app.use((req, res) => {
