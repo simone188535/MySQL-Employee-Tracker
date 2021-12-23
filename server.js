@@ -26,7 +26,65 @@ const viewAllEmployee = async () => {
   }
 };
 
-const addEmployee = async () => {};
+const addEmployee = async () => {
+    try {
+        const allManagersQuery = await queryPromise("SELECT * FROM employee WHERE manager_id IS NULL;");
+        const allRoleQuery = await queryPromise("SELECT * FROM role;");
+
+        const allRoleNames = allRoleQuery.map(
+            (department) => department.title
+          );
+
+        const FirstAndLastName = allManagersQuery.map(
+            (name) => `${name.first_name} ${name.last_name}`
+        );
+   
+        const { employeeFirstName, employeeLastName, whichRole, whichManager } = await inquirer.prompt([
+            {
+              type: "input",
+              message: "What is the employee's first name?",
+              name: "employeeFirstName",
+            },
+            {
+              type: "input",
+              message: "What is the employee's last name?",
+              name: "employeeLastName",
+            },
+            {
+              type: "list",
+              message: "Which is the employee's role?",
+              pageSize: allRoleNames.length,
+              choices: allRoleNames,
+              name: "whichRole",
+            },
+            {
+                type: "list",
+                message: "Who is the employee's manager?",
+                pageSize: FirstAndLastName.length,
+                choices: FirstAndLastName,
+                name: "whichManager",
+              },
+          ]);
+
+        const splitFirstAndLastName = whichManager.split(' ');
+        const findManagerQueryObj = allManagersQuery.find(
+        (element) => element.first_name === splitFirstAndLastName[0] && element.last_name === splitFirstAndLastName[1]
+        );
+
+        const findRoleQueryObj = allRoleQuery.find(
+        (element) => element.title === whichRole
+        );
+
+        const addEmployeeQuery = await queryPromise(
+          `INSERT INTO employee (first_name, last_name, role_id, manager_id)
+          VALUES (?, ?, ?, ?)`,
+          [employeeFirstName, employeeLastName, findRoleQueryObj.id, findManagerQueryObj.id]
+        );
+        console.table(addEmployeeQuery);
+      } catch (err) {
+        throw err;
+      }
+};
 
 const updateEmployeeRole = () => {};
 
@@ -70,13 +128,13 @@ const addRole = async () => {
       },
     ]);
 
-    const findDeptQueryObj = allDepartmentQuery.find(
+    const findRoleQueryObj = allDepartmentQuery.find(
       (element) => element.name === whichRole
     );
 
     await queryPromise(
       "INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?);",
-      [roleName, roleSalary, findDeptQueryObj.id]
+      [roleName, roleSalary, findRoleQueryObj.id]
     );
     console.log(`Added ${roleName} to database.`);
   } catch (err) {
@@ -169,8 +227,8 @@ const allUserOptions = async () => {
       }
 
       default:
-        // Add code to quit program
-        return null;
+        // quit program
+        return process.exit(1);
     }
   } catch (err) {
     throw err;
