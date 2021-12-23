@@ -1,7 +1,10 @@
 const express = require("express");
 const inquirer = require("inquirer");
-const db = require("./db-connection");
+const util = require("util");
+require("console.table");
 
+const db = require("./db-connection");
+const queryPromise = util.promisify(db.query).bind(db);
 const PORT = process.env.PORT || 3001;
 const app = express();
 
@@ -9,20 +12,93 @@ const app = express();
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
+const viewAllEmployee = async () => {
+  try {
+    // https://www.mysqltutorial.org/mysql-self-join/   Table Join to self
+    // const allEmployeeQuery = await queryPromise("SELECT employee.first_name, employee.last_name, role.title, department.name AS department, role.salary FROM employee INNER JOIN role ON employee.role_id = role.id LEFT JOIN department ON employee.manager_id = department.id;");
+    const allEmployeeQuery = await queryPromise(
+      "SELECT * FROM employee INNER JOIN role ON employee.role_id = role.id LEFT JOIN department ON employee.manager_id = department.id;"
+    );
+    console.table(allEmployeeQuery);
+  } catch (err) {
+    throw err;
+  }
+};
 
-const viewAllEmployee = () => {};
-
-const addEmployee = () => {};
+const addEmployee = async () => {};
 
 const updateEmployeeRole = () => {};
 
-const viewAllRoles = () => {};
+// complete
+const viewAllRoles = async () => {
+  try {
+    const allRolesQuery = await queryPromise(
+      "SELECT role.id, role.title, department.name AS department, role.salary FROM role INNER JOIN department ON role.department_id = department.id;"
+    );
+    console.table(allRolesQuery);
+  } catch (err) {
+    throw err;
+  }
+};
 
-const addRole = () => {};
+// complete
+const addRole = async () => {
+    try {
+        const allDepartmentQuery = await queryPromise("SELECT * FROM department;");
+        const departmentNames = allDepartmentQuery.map((department) => department.name);
 
-const viewAllDepartment = () => {};
+        const { roleName, roleSalary, whichRole } = await inquirer.prompt([{
+            type: "input",
+            message: "What is the name of the role?",
+            name: "roleName",
+          },{
+            type: "input",
+            message: "What is the salary of the role?",
+            name: "roleSalary",
+          },
+          {
+            type: "list",
+            message: "Which department does the role belong to?",
+            pageSize: departmentNames.length,
+            choices: departmentNames,
+            name: "whichRole",
+          },
+        ]);
 
-const addDepartment = () => {};
+        const findDeptQueryObj =  allDepartmentQuery.find(element => element.name === whichRole);
+
+        await queryPromise("INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?);", [roleName, roleSalary, findDeptQueryObj.id]);
+        console.log(`Added ${roleName} to database.`);
+      } catch (err) {
+        throw err;
+      }
+};
+
+// complete
+const viewAllDepartment = async () => {
+  try {
+    const allDepartmentQuery = await queryPromise("SELECT * FROM department;");
+    console.table(allDepartmentQuery);
+  } catch (err) {
+    throw err;
+  }
+};
+
+// correct
+const addDepartment = async () => {
+  try {
+    const { departmentName } = await inquirer.prompt([{
+      type: "input",
+      message: "What is the name of the department?",
+      name: "departmentName",
+    }]);
+
+    await queryPromise("INSERT INTO department (name) VALUES (?);", departmentName);
+    console.log(`Added ${departmentName} to database.`);
+  } catch (err) {
+    throw err;
+  }
+};
 
 const allUserOptions = async () => {
   try {
@@ -48,40 +124,43 @@ const allUserOptions = async () => {
     switch (whatWouldYouLikeToDo) {
       case "View All Employee": {
         viewAllEmployee();
-        break;
+        return allUserOptions();
       }
 
       case "Add Employee": {
-        addEmployee();
-        break;
+        await addEmployee();
+        return allUserOptions();
       }
 
       case "Update Employee Role": {
-        updateEmployeeRole();
-        break;
+        await updateEmployeeRole();
+        return allUserOptions();
       }
       case "View All Roles": {
-        viewAllRoles();
-        break;
+        await viewAllRoles();
+        return allUserOptions();
       }
       case "Add Role": {
-        addRole();
-        break;
+        await addRole();
+        return allUserOptions();
       }
       case "View All Department": {
-        viewAllDepartment();
-        break;
+        await viewAllDepartment();
+        return allUserOptions();
       }
       case "Add Department": {
-        addDepartment();
-        break;
+        await addDepartment();
+        return allUserOptions();
       }
 
       default:
-        return;
+        // Add code to quit program
+        return null;
     }
   } catch (err) {
     throw err;
+  } finally {
+    console.log("\n");
   }
 };
 
@@ -89,23 +168,23 @@ allUserOptions();
 
 // Query database
 
-let deletedRow = 2;
+// let deletedRow = 2;
 // db.query(`DELETE FROM favorite_books WHERE  ? OR ?`, [{id: 2 }, { id: 6 }], (err, result) => {
-db.query(
-  `DELETE FROM favorite_books WHERE id = ?`,
-  deletedRow,
-  (err, result) => {
-    if (err) {
-      console.log(err);
-    }
-    console.log(result);
-  }
-);
+// db.query(
+//   `DELETE FROM favorite_books WHERE id = ?`,
+//   deletedRow,
+//   (err, result) => {
+//     if (err) {
+//       console.log(err);
+//     }
+//     console.log(result);
+//   }
+// );
 
-// Query database
-db.query("SELECT * FROM favorite_books", function (err, results) {
-  console.log(results);
-});
+// // Query database
+// db.query("SELECT * FROM favorite_books", function (err, results) {
+//   console.log(results);
+// });
 
 // Default response for any other request (Not Found)
 app.use((req, res) => {
