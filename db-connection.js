@@ -1,5 +1,5 @@
 const mysql = require('mysql2');
-
+// add async here
 // Connect to database
 const db = mysql.createConnection(
     {
