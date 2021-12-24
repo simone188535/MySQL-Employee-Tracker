@@ -260,33 +260,33 @@ const allUserOptions = async () => {
     switch (whatWouldYouLikeToDo) {
       case "View All Employee": {
         await viewAllEmployee();
-        return await allUserOptions();
+        break;
       }
 
       case "Add Employee": {
         await addEmployee();
-        return await allUserOptions();
+        break;
       }
 
       case "Update Employee Role": {
         await updateEmployeeRole();
-        return await allUserOptions();
+        break;
       }
       case "View All Roles": {
         await viewAllRoles();
-        return await allUserOptions();
+        break;
       }
       case "Add Role": {
         await addRole();
-        return await allUserOptions();
+        break;
       }
       case "View All Department": {
         await viewAllDepartment();
-        return await allUserOptions();
+        break;
       }
       case "Add Department": {
         await addDepartment();
-        return await allUserOptions();
+        break;
       }
 
       default:
@@ -294,9 +294,9 @@ const allUserOptions = async () => {
         return process.exit(1);
     }
   } catch (err) {
-    throw err;
+    throw console.log('An error occurred. Please try again later.');
   } finally {
-    console.log("\n");
+    await allUserOptions();
   }
 };
 
