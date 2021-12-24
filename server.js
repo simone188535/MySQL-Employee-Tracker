@@ -27,7 +27,6 @@ const viewAllEmployee = async () => {
   }
 };
 
-// complete
 const addEmployee = async () => {
   try {
     const allManagersQuery = await queryPromise(
@@ -105,12 +104,17 @@ const addEmployee = async () => {
 
 const updateEmployeeRole = async () => {
   try {
-
-    const allEmployees = await queryPromise(`SELECT * FROM employee`);
+    const allEmployees = await queryPromise(`SELECT * FROM employee;`);
     const allRoleQuery = await queryPromise("SELECT * FROM role;");
+
     const FirstAndLastNames = allEmployees.map(
       (name) => `${name.first_name} ${name.last_name}`
     );
+
+    const rolesList = allRoleQuery.map(
+        (role) => role.title
+      );
+
     const { whichEmployee, whichRoleForEmployee } = await inquirer.prompt([
       {
         type: "list",
@@ -123,20 +127,21 @@ const updateEmployeeRole = async () => {
         type: "list",
         message: "Which role do you want to assign the selected employee?",
         pageSize: 5,
-        choices: allRoleQuery,
+        choices: rolesList,
         name: "whichRoleForEmployee",
       },
     ]);
+    const splitFirstAndLastName = whichEmployee.split(" ");
 
-    const filteredAllRoleQueryObj = allRoleQuery.filter(
+    const filteredAllRoleQueryObj = allRoleQuery.find(
       (element) => element.title === whichRoleForEmployee
     );
-    const filteredEmployeeObj = allEmployees.filter(
+    const filteredEmployeeObj = allEmployees.find(
       (element) =>
         element.first_name === splitFirstAndLastName[0] &&
         element.last_name === splitFirstAndLastName[1]
     );
-    const splitFirstAndLastName = whichEmployee.split(" ");
+ 
     await queryPromise(
       `UPDATE employee
         SET role_id = (?)
@@ -150,7 +155,6 @@ const updateEmployeeRole = async () => {
   }
 };
 
-// complete
 const viewAllRoles = async () => {
   try {
     const allRolesQuery = await queryPromise(
@@ -162,7 +166,6 @@ const viewAllRoles = async () => {
   }
 };
 
-// complete
 const addRole = async () => {
   try {
     const allDepartmentQuery = await queryPromise("SELECT * FROM department;");
@@ -204,7 +207,6 @@ const addRole = async () => {
   }
 };
 
-// complete
 const viewAllDepartment = async () => {
   try {
     const allDepartmentQuery = await queryPromise("SELECT * FROM department;");
@@ -214,7 +216,6 @@ const viewAllDepartment = async () => {
   }
 };
 
-// correct
 const addDepartment = async () => {
   try {
     const { departmentName } = await inquirer.prompt([
@@ -258,34 +259,34 @@ const allUserOptions = async () => {
 
     switch (whatWouldYouLikeToDo) {
       case "View All Employee": {
-        viewAllEmployee();
-        return allUserOptions();
+        await viewAllEmployee();
+        return await allUserOptions();
       }
 
       case "Add Employee": {
         await addEmployee();
-        return allUserOptions();
+        return await allUserOptions();
       }
 
       case "Update Employee Role": {
         await updateEmployeeRole();
-        return allUserOptions();
+        return await allUserOptions();
       }
       case "View All Roles": {
         await viewAllRoles();
-        return allUserOptions();
+        return await allUserOptions();
       }
       case "Add Role": {
         await addRole();
-        return allUserOptions();
+        return await allUserOptions();
       }
       case "View All Department": {
         await viewAllDepartment();
-        return allUserOptions();
+        return await allUserOptions();
       }
       case "Add Department": {
         await addDepartment();
-        return allUserOptions();
+        return await allUserOptions();
       }
 
       default:
