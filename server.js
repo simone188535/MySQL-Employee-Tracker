@@ -97,12 +97,13 @@ const addEmployee = async () => {
         ManagerQueryObjVal(),
       ]
     );
+    console.log('Employee added');
   } catch (err) {
     throw err;
   }
 };
 
-const updateEmployeeRole = () => {
+const updateEmployeeRole = async () => {
   try {
 
     const allEmployees = await queryPromise(`SELECT * FROM employee`);
@@ -110,13 +111,13 @@ const updateEmployeeRole = () => {
     const FirstAndLastNames = allEmployees.map(
       (name) => `${name.first_name} ${name.last_name}`
     );
-    const { whichEmployeeRole, whichRoleForEmployee } = await inquirer.prompt([
+    const { whichEmployee, whichRoleForEmployee } = await inquirer.prompt([
       {
         type: "list",
         message: "Which employee's role do you want to update?",
         pageSize: 5,
         choices: FirstAndLastNames,
-        name: "whichEmployeeRole",
+        name: "whichEmployee",
       },
       {
         type: "list",
@@ -135,7 +136,7 @@ const updateEmployeeRole = () => {
         element.first_name === splitFirstAndLastName[0] &&
         element.last_name === splitFirstAndLastName[1]
     );
-    const splitFirstAndLastName = whichEmployeeRole.split(" ");
+    const splitFirstAndLastName = whichEmployee.split(" ");
     await queryPromise(
       `UPDATE employee
         SET role_id = (?)
@@ -143,7 +144,7 @@ const updateEmployeeRole = () => {
       [filteredAllRoleQueryObj.id, filteredEmployeeObj.id]
     );
 
-    // console.table(allRolesQuery);
+    console.log('Updated employees role');
   } catch (err) {
     throw err;
   }
