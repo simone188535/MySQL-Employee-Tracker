@@ -32,10 +32,8 @@ VALUES
 -- Artist
 ('Junior Visual Design Artist', 35000, 5),
 ('Visual Design Artist', 55000, 5),
-('Senior Visual Design Artist', 60000, 5),
+('Senior Visual Design Artist', 60000, 5);
 
--- No Role
-('New Hire', 0, NULL);
 
 INSERT INTO employee (first_name, last_name, role_id, manager_id)
 VALUES 
@@ -79,8 +77,6 @@ VALUES
 -- Visual Design Artist
 ('Mill', 'Willis', 15, 4),
 -- Senior Visual Design Artist
-('Aeyllin', 'Mitchill', 16, 4),
+('Aeyllin', 'Mitchill', 16, 4);
 
--- No Role
-('Amy', 'Lockhart', 17, NULL);
 

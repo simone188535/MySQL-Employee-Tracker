@@ -15,78 +15,139 @@ app.use(express.json());
 const viewAllEmployee = async () => {
   try {
     const allEmployeeQuery = await queryPromise(
-        `SELECT e.id, e.first_name, e.last_name, role.title, department.name AS department, role.salary, CONCAT(m.first_name, ' ', m.last_name) AS manager 
+      `SELECT e.id, e.first_name, e.last_name, role.title, department.name AS department, role.salary, CONCAT(m.first_name, ' ', m.last_name) AS manager 
         FROM employee m RIGHT JOIN
         employee e ON m.id = e.manager_id
         INNER JOIN role ON e.role_id = role.id 
-        LEFT JOIN department ON role.department_id = department.id`);
+        LEFT JOIN department ON role.department_id = department.id`
+    );
     console.table(allEmployeeQuery);
   } catch (err) {
     throw err;
   }
 };
 
+// complete
 const addEmployee = async () => {
-    try {
-        const allManagersQuery = await queryPromise("SELECT * FROM employee WHERE manager_id IS NULL;");
-        const allRoleQuery = await queryPromise("SELECT * FROM role;");
+  try {
+    const allManagersQuery = await queryPromise(
+      "SELECT * FROM employee WHERE manager_id IS NULL;"
+    );
+    const allRoleQuery = await queryPromise("SELECT * FROM role;");
 
-        const allRoleNames = allRoleQuery.map(
-            (department) => department.title
-          );
+    const allRoleNames = allRoleQuery.map((department) => department.title);
 
-        const FirstAndLastName = allManagersQuery.map(
-            (name) => `${name.first_name} ${name.last_name}`
-        );
-   
-        const { employeeFirstName, employeeLastName, whichRole, whichManager } = await inquirer.prompt([
-            {
-              type: "input",
-              message: "What is the employee's first name?",
-              name: "employeeFirstName",
-            },
-            {
-              type: "input",
-              message: "What is the employee's last name?",
-              name: "employeeLastName",
-            },
-            {
-              type: "list",
-              message: "Which is the employee's role?",
-              pageSize: allRoleNames.length,
-              choices: allRoleNames,
-              name: "whichRole",
-            },
-            {
-                type: "list",
-                message: "Who is the employee's manager?",
-                pageSize: FirstAndLastName.length,
-                choices: FirstAndLastName,
-                name: "whichManager",
-              },
-          ]);
+    const FirstAndLastNames = allManagersQuery.map(
+      (name) => `${name.first_name} ${name.last_name}`
+    );
 
-        const splitFirstAndLastName = whichManager.split(' ');
+    const { employeeFirstName, employeeLastName, whichRole, whichManager } =
+      await inquirer.prompt([
+        {
+          type: "input",
+          message: "What is the employee's first name?",
+          name: "employeeFirstName",
+        },
+        {
+          type: "input",
+          message: "What is the employee's last name?",
+          name: "employeeLastName",
+        },
+        {
+          type: "list",
+          message: "Which is the employee's role?",
+          pageSize: 5,
+          choices: allRoleNames,
+          name: "whichRole",
+        },
+        {
+          type: "list",
+          message: "Who is the employee's manager?",
+          pageSize: 5,
+          choices: ["None", ...FirstAndLastNames],
+          name: "whichManager",
+        },
+      ]);
+
+    const ManagerQueryObjVal = () => {
+      if (whichManager === "None") {
+        return;
+      } else {
+        const splitFirstAndLastName = whichManager.split(" ");
         const findManagerQueryObj = allManagersQuery.find(
-        (element) => element.first_name === splitFirstAndLastName[0] && element.last_name === splitFirstAndLastName[1]
+          (element) =>
+            element.first_name === splitFirstAndLastName[0] &&
+            element.last_name === splitFirstAndLastName[1]
         );
-
-        const findRoleQueryObj = allRoleQuery.find(
-        (element) => element.title === whichRole
-        );
-
-        const addEmployeeQuery = await queryPromise(
-          `INSERT INTO employee (first_name, last_name, role_id, manager_id)
-          VALUES (?, ?, ?, ?)`,
-          [employeeFirstName, employeeLastName, findRoleQueryObj.id, findManagerQueryObj.id]
-        );
-        console.table(addEmployeeQuery);
-      } catch (err) {
-        throw err;
+        return findManagerQueryObj.id;
       }
+    };
+
+    const findRoleQueryObj = allRoleQuery.find(
+      (element) => element.title === whichRole
+    );
+
+    await queryPromise(
+      `INSERT INTO employee (first_name, last_name, role_id, manager_id)
+          VALUES (?, ?, ?, ?)`,
+      [
+        employeeFirstName,
+        employeeLastName,
+        findRoleQueryObj.id,
+        ManagerQueryObjVal(),
+      ]
+    );
+  } catch (err) {
+    throw err;
+  }
 };
 
-const updateEmployeeRole = () => {};
+const updateEmployeeRole = () => {
+  try {
+
+    const allEmployees = await queryPromise(`SELECT * FROM employee`);
+    const allRoleQuery = await queryPromise("SELECT * FROM role;");
+    const FirstAndLastNames = allEmployees.map(
+      (name) => `${name.first_name} ${name.last_name}`
+    );
+    const { whichEmployeeRole, whichRoleForEmployee } = await inquirer.prompt([
+      {
+        type: "list",
+        message: "Which employee's role do you want to update?",
+        pageSize: 5,
+        choices: FirstAndLastNames,
+        name: "whichEmployeeRole",
+      },
+      {
+        type: "list",
+        message: "Which role do you want to assign the selected employee?",
+        pageSize: 5,
+        choices: allRoleQuery,
+        name: "whichRoleForEmployee",
+      },
+    ]);
+
+    const filteredAllRoleQueryObj = allRoleQuery.filter(
+      (element) => element.title === whichRoleForEmployee
+    );
+    const filteredEmployeeObj = allEmployees.filter(
+      (element) =>
+        element.first_name === splitFirstAndLastName[0] &&
+        element.last_name === splitFirstAndLastName[1]
+    );
+    const splitFirstAndLastName = whichEmployeeRole.split(" ");
+    await queryPromise(
+      `UPDATE employee
+        SET role_id = (?)
+        WHERE id = (?);`,
+      [filteredAllRoleQueryObj.id, filteredEmployeeObj.id]
+    );
+
+    // console.table(allRolesQuery);
+  } catch (err) {
+    throw err;
+  }
+};
 
 // complete
 const viewAllRoles = async () => {
@@ -122,7 +183,7 @@ const addRole = async () => {
       {
         type: "list",
         message: "Which department does the role belong to?",
-        pageSize: departmentNames.length,
+        pageSize: 5,
         choices: departmentNames,
         name: "whichRole",
       },
