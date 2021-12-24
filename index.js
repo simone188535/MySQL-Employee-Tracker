@@ -242,7 +242,7 @@ const allUserOptions = async () => {
       {
         type: "list",
         message: "What would you like to do?",
-        pageSize: 7,
+        pageSize: 8,
         choices: [
           "View All Employee",
           "Add Employee",
@@ -254,7 +254,7 @@ const allUserOptions = async () => {
           "Quit",
         ],
         name: "whatWouldYouLikeToDo",
-      },
+      }
     ]);
 
     switch (whatWouldYouLikeToDo) {
